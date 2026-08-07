@@ -1,21 +1,55 @@
 import os
+import threading
+
+from flask import Flask
 from dotenv import load_dotenv
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    ContextTypes,
-)
+from telegram.ext import Application, CommandHandler, ContextTypes
+
+
+# -------------------------
+# CONFIGURAZIONE
+# -------------------------
 
 load_dotenv()
 
 TOKEN = os.getenv("BOT_TOKEN")
 
+
+# -------------------------
+# SERVER WEB PER RENDER
+# -------------------------
+
+web_app = Flask(__name__)
+
+
+@web_app.route("/")
+def home():
+    return "Bot online", 200
+
+
+def run_web_server():
+    port = int(os.environ.get("PORT", 10000))
+
+    web_app.run(
+        host="0.0.0.0",
+        port=port
+    )
+
+
+# -------------------------
+# BOT TELEGRAM
+# -------------------------
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     keyboard = [
-        [InlineKeyboardButton("💰🎰 CLICCA QUI", url="https://beacons.ai/communitygames_09")]
+        [
+            InlineKeyboardButton(
+                "💰🎰 CLICCA QUI", url="https://beacons.ai/communitygames_09"
+            )
+        ]
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -47,15 +81,36 @@ Detto questo buona fortuna a tutti/e quelle che vogliono iniziare a provare a gu
         reply_markup=reply_markup
     )
 
+
+# -------------------------
+# AVVIO
+# -------------------------
+
 def main():
+
+    if not TOKEN:
+        raise RuntimeError(
+            "BOT_TOKEN non configurato nelle variabili d'ambiente."
+        )
+
+    # Server HTTP necessario per Render
+    threading.Thread(
+        target=run_web_server,
+        daemon=True
+    ).start()
+
+    # Bot Telegram
     app = Application.builder().token(TOKEN).build()
 
-    app.add_handler(CommandHandler("start", start))
+    app.add_handler(
+        CommandHandler("start", start)
+    )
 
-    print("✅ Bot avviato!")
+    print("✅ Bot Telegram avviato!")
+    print("✅ Server web avviato!")
 
     app.run_polling()
 
+
 if __name__ == "__main__":
     main()
-    
