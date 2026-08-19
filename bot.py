@@ -42,14 +42,26 @@ def run_web_server():
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    # TRACCIAMENTO UTENTI PROVENIENTI DAL QUIZ
-    if context.args and context.args[0] == "quiz":
-        user = update.effective_user
+    print(f"START RICEVUTO | args={context.args}", flush=True)
 
+    # TRACCIAMENTO UTENTI PROVENIENTI DAL QUIZ
+    if context.args:
+    user = update.effective_user
+
+    if context.args[0] == "quiz":
         print(
             f"QUIZ_START | user_id={user.id} | "
             f"username={user.username} | "
-            f"nome={user.first_name}"
+            f"nome={user.first_name}",
+            flush=True
+        )
+
+    elif context.args[0] == "instagram":
+        print(
+            f"INSTAGRAM_START | user_id={user.id} | "
+            f"username={user.username} | "
+            f"nome={user.first_name}",
+            flush=True
         )
 
     keyboard = [
